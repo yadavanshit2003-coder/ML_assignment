@@ -1,138 +1,71 @@
 # Online Shoppers Purchasing Intention Prediction
 
-## Project Overview
+## a. Problem statement
 
-This project uses machine learning classification algorithms to predict whether an online visitor will generate revenue (make a purchase) based on their browsing behaviour and session information.
+Predict whether an online shopping session ends in a purchase (`Revenue`) from the visitor's browsing behaviour and session attributes. This is a binary classification problem. Five classifiers are trained on the same dataset, compared on the same metrics, and served from saved models in a Streamlit app. The app does not retrain on uploaded test data.
 
-The project compares multiple classification models and presents their performance through an interactive web application built using **Streamlit**.
+## b. Dataset description
 
-## Dataset
+**Online Shoppers Purchasing Intention** (UCI Machine Learning Repository).
 
-The project uses the **Online Shoppers Purchasing Intention Dataset**.
+- Instances: 12,330 in the raw file. 125 exact duplicate rows were removed before training, leaving 12,205
+- Features: 17 (above the 12 minimum)
+- Target: `Revenue` (`True` / `1` = purchase, `False` / `0` = no purchase)
+- Class balance after dedup: 1,908 purchases and 10,297 non-purchases (imbalanced)
+- Feature types: numeric session stats (page counts, durations, bounce rate, exit rate, page values, special day), categorical fields (`Month`, `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`), and a boolean `Weekend`
 
-- Number of records: 12,330
-- Target variable: `Revenue`
-- `Revenue = 1`: Purchase made
-- `Revenue = 0`: No purchase made
+Numeric features are scaled and categorical features are one-hot encoded inside each saved pipeline. Train/test split is 80/20, stratified, `random_state=42`, after duplicates are removed. `test_data.csv` is that held-out split (2,441 rows) and includes the target column.
 
-The dataset contains numerical and categorical features describing visitors' browsing sessions.
+## c. GitHub repository link
 
-## Machine Learning Models
+https://github.com/yadavanshit2003-coder/ML_assignment
 
-The following five classification algorithms are implemented and compared:
+Live Streamlit app: https://mlassignment-gscl5dmr4xsgm6pyprdrzf.streamlit.app/
 
-1. Logistic Regression
-2. Decision Tree
-3. K-Nearest Neighbors (KNN)
-4. Gaussian Naive Bayes
-5. Support Vector Machine (SVM)
+## d. Models used
 
-## Model Evaluation
+All five models are trained on the same dataset. Metrics below are on the held-out test set.
 
-The models are evaluated using the following performance metrics:
+| ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
+| --- | --- | --- | --- | --- | --- | --- |
+| Logistic Regression | 0.8873 | 0.8998 | 0.7536 | 0.4162 | 0.5363 | 0.5055 |
+| Decision Tree | 0.9021 | 0.9243 | 0.7061 | 0.6414 | 0.6722 | 0.6157 |
+| KNN | 0.8742 | 0.8002 | 0.6682 | 0.3901 | 0.4926 | 0.4465 |
+| Naive Bayes | 0.2773 | 0.7508 | 0.1756 | 0.9791 | 0.2978 | 0.1375 |
+| Support Vector Machine | 0.8955 | 0.8738 | 0.7378 | 0.5157 | 0.6071 | 0.5607 |
 
-| Metric | Description |
-|---|---|
-| Accuracy | Overall proportion of correct predictions |
-| Precision | Proportion of predicted purchases that are actual purchases |
-| Recall | Proportion of actual purchases correctly identified |
-| F1-Score | Harmonic mean of precision and recall |
-| ROC-AUC | Measures the model's ability to distinguish between the two classes |
-| Matthews Correlation Coefficient (MCC) | Measures the quality of binary classifications, accounting for all four confusion-matrix outcomes |
+### Observations
 
-Since the dataset has an imbalanced target variable, multiple evaluation metrics are considered rather than relying only on accuracy.
+| ML Model Name | Observation about model performance |
+| --- | --- |
+| Logistic Regression | High accuracy (0.8873) and a strong AUC (0.8998), with the best precision (0.7536). Recall is low (0.4162), so many actual purchases are missed. |
+| Decision Tree | Best accuracy (0.9021), AUC (0.9243), F1 (0.6722), and MCC (0.6157). Recall (0.6414) is clearly higher than the linear models while precision stays above 0.70. |
+| KNN | Accuracy stays high (0.8742) because the majority class is easy, but AUC (0.8002) and F1 (0.4926) are weaker. Neighbour voting does not separate the rare purchase class well. |
+| Naive Bayes | Recall is very high (0.9791) but precision (0.1756) and accuracy (0.2773) collapse. The independence assumption does not hold on these correlated session features, so the model flags almost everything as a purchase. |
+| Support Vector Machine | Close to logistic regression: accuracy 0.8955, AUC 0.8738, F1 0.6071, MCC 0.5607. Better recall than logistic regression, slightly lower precision. |
+| Overall, Winner for your dataset? | Decision Tree. It leads on accuracy, AUC, F1, and MCC, which matter more than raw accuracy on this imbalanced purchase label. |
 
-## Project Structure
+## Project structure
 
 ```text
-ML-assignment-2/
-│
-├── app.py                  # Streamlit web application
-├── models.pkl              # Saved trained machine learning models
-├── model_metrics.csv       # Evaluation metrics for all models
-├── input_schema.json       # Feature information for prediction inputs (if used)
-├── requirements.txt        # Project dependencies
-├── logistic_regression.ipynb  # Model development notebook
-└── README.md               # Project documentation
+ML_assignment/
+├── app.py
+├── requirements.txt
+├── README.md
+├── test_data.csv
+├── online_shoppers_intention.csv
+├── model_metrics.csv
+├── models.pkl
+└── logistic_regression.ipynb
 ```
 
-## Technologies Used
-
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- Seaborn
-- Streamlit
-- Joblib
-
-## Installation and Setup
-
-### 1. Clone the repository
+## Run locally
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-```
-
-### 2. Navigate to the project directory
-
-```bash
-cd ML-assignment-2
-```
-
-### 3. Create a virtual environment (optional)
-
-```bash
-python -m venv .venv
-```
-
-Activate it on Windows:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-### 4. Install dependencies
-
-```bash
+git clone https://github.com/yadavanshit2003-coder/ML_assignment
+cd ML_assignment
 python -m pip install -r requirements.txt
-```
-
-### 5. Run the Streamlit application
-
-```bash
 python -m streamlit run app.py
 ```
 
-The application will open in your browser.
-
-## Streamlit Application
-
-The Streamlit application provides an interface to:
-
-- View and compare the performance of all five machine learning models.
-- Examine evaluation metrics such as accuracy, precision, recall, F1-score, ROC-AUC, and MCC.
-- Explore model performance through visualizations.
-- Make predictions using the trained models, if prediction inputs are enabled in the application.
-
-## Deployment
-
-The application can be deployed using **Streamlit Community Cloud**.
-
-1. Push the project files to a GitHub repository.
-2. Visit [Streamlit Community Cloud](https://share.streamlit.io/).
-3. Sign in using GitHub.
-4. Select the project repository.
-5. Choose `app.py` as the main file.
-6. Click **Deploy**.
-
-## Author
-
-**Your Name**
-
-Machine Learning Assignment
-
----
-
-*This project was developed as part of a Machine Learning assignment to study, implement, and compare different classification algorithms.*
+Upload `test_data.csv` in the app, pick a model, and the page shows metrics plus a confusion matrix from the saved model.
